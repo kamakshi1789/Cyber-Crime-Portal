@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+    <h1 class="page-title">
+        Admin Login
+    </h1>
+    
+    <p class="page-subtitle">
+        Authorized administrators can securely access the cyber crime management dashboard.
+    </p>
+    
+    <div class="auth-box">
+    
+        <!-- FLASH MESSAGE -->
+    
+        {% with messages = get_flashed_messages() %}
+    
+            {% if messages %}
+    
+                {% for message in messages %}
+    
+                    <div class="error-message">
+    
+                        {{ message }}
+    
+                    </div>
+    
+                {% endfor %}
+    
+            {% endif %}
+    
+        {% endwith %}
+    
+        <!-- ADMIN LOGIN FORM -->
+    
+        <form method="POST">
+    
+            <input
+            type="text"
+            name="username"
+            placeholder="Enter Admin Username"
+            required>
+    
+            <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            required>
+    
+            <button type="submit">
+    
+                Admin Login
+    
+            </button>
+    
+        </form>
+    
+    </div>
+</div>
+
+{% endblock %}

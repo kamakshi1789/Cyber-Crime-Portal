@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- PAGE TITLE -->
+
+<h1 class="page-title">
+    Report Cyber Crime
+</h1>
+
+<p class="page-subtitle">
+    Submit cyber crime complaints securely with proper details and supporting evidence.
+</p>
+
+<hr class="orange-line">
+
+<!-- NOTICE -->
+
+<div class="alert-banner">
+
+    ⚠ Providing false information to law enforcement agencies
+    is punishable under applicable cyber laws.
+    Ensure all complaint details are accurate.
+
+</div>
+
+<!-- FORM -->
+
+<div class="form-box complaint-form">
+
+    <form method="POST" enctype="multipart/form-data">
+
+        <!-- ROW -->
+
+        <div class="form-row">
+
+            <!-- CATEGORY -->
+
+            <div>
+
+                <label>
+                    Complaint Category
+                </label>
+
+                <select name="category" required>
+
+                    <option value="">
+                        -- Select Category --
+                    </option>
+
+                    <option>
+                        UPI Fraud
+                    </option>
+
+                    <option>
+                        Fake Calls
+                    </option>
+
+                    <option>
+                        Social Media Scam
+                    </option>
+
+                    <option>
+                        Phishing
+                    </option>
+
+                    <option>
+                        Identity Theft
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- DATE -->
+
+            <div>
+
+                <label>
+                    Date & Time of Incident
+                </label>
+
+                <input
+                type="datetime-local"
+                name="incident_date"
+                required>
+
+            </div>
+
+        </div>
+
+        <!-- SUSPECT -->
+
+        <label>
+            Suspect Details / Phone / UPI ID
+        </label>
+
+        <input
+        type="text"
+        name="suspect"
+        placeholder="Example: +91 XXXXXXXX, scammer@upi">
+
+        <!-- DESCRIPTION -->
+
+        <label>
+            Detailed Description of Incident
+        </label>
+
+        <textarea
+        name="description"
+        placeholder="Explain how the incident happened..."
+        required></textarea>
+
+        <!-- AMOUNT -->
+
+        <div class="form-row">
+
+            <div>
+
+                <label>
+                    Fraud Amount (if any)
+                </label>
+
+                <input
+                type="number"
+                name="amount"
+                placeholder="Enter Amount">
+
+            </div>
+
+            <!-- PRIORITY -->
+
+            <div>
+
+                <label>
+                    Priority Level
+                </label>
+
+                <select name="priority">
+
+                    <option>
+                        High
+                    </option>
+
+                    <option>
+                        Medium
+                    </option>
+
+                    <option>
+                        Low
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <!-- EVIDENCE -->
+
+        <label>
+            Upload Screenshot / Evidence
+        </label>
+
+        <input
+        type="file"
+        name="evidence">
+
+        <!-- BUTTONS -->
+
+        <div class="form-buttons">
+
+            <button type="reset"
+            class="secondary-btn">
+
+                Reset
+
+            </button>
+
+            <button type="submit"
+            class="primary-btn">
+
+                Submit Complaint
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

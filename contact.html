@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- PAGE TITLE -->
+
+<h1 class="page-title">
+    Contact & Support
+</h1>
+
+<p class="page-subtitle">
+    Reach out for cyber crime assistance, emergency fraud reporting,
+    and support services.
+</p>
+
+<!-- CONTACT GRID -->
+
+<div class="grid-3">
+
+    <!-- HELPLINE -->
+
+    <div class="card">
+
+        <h2>
+            National Cyber Helpline
+        </h2>
+
+        <br>
+
+        <h1 style="color:#dc2626;">
+            📞 1930
+        </h1>
+
+        <br>
+
+        <p>
+            Report financial cyber frauds immediately through the
+            national cyber emergency helpline.
+        </p>
+
+    </div>
+
+    <!-- EMAIL -->
+
+    <div class="card">
+
+        <h2>
+            Support Email
+        </h2>
+
+        <br>
+
+        <h3>
+            support@cybersecure.in
+        </h3>
+
+        <br>
+
+        <p>
+            Contact the cyber support team for guidance and assistance
+            related to online scams and complaint reporting.
+        </p>
+
+    </div>
+
+    <!-- OFFICE -->
+
+    <div class="card">
+
+        <h2>
+            Cyber Security Cell
+        </h2>
+
+        <br>
+
+        <p>
+            Cyber Secure India Portal<br>
+            National Digital Safety Division<br>
+            New Delhi, India
+        </p>
+
+        <br>
+
+        <p>
+            Monday to Friday<br>
+            9:00 AM – 6:00 PM
+        </p>
+
+    </div>
+
+</div>
+
+<!-- CONTACT FORM -->
+
+<div class="form-box" style="margin-top:40px;">
+
+    <h2>
+        Send Us a Message
+    </h2>
+
+   <form method="POST">
+
+    <div class="form-row">
+
+        <input
+        type="text"
+        name="name"
+        placeholder="Enter Full Name"
+        required>
+
+        <input
+        type="email"
+        name="email"
+        placeholder="Enter Email Address"
+        required>
+
+    </div>
+
+    <br>
+
+    <textarea
+    name="message"
+    placeholder="Write your message or query here..."
+    required></textarea>
+
+    <br><br>
+
+    <button type="submit">
+
+        Submit Message
+
+    </button>
+
+</form>
+
+</div>
+
+{% endblock %}

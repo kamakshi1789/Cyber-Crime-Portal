@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- BACK TO ADMIN DASHBOARD -->
+<div class="dossier-navigation">
+    <a href="/admin" class="back-dashboard-btn">
+        <i class="fa-solid fa-arrow-left"></i> Return to Admin Dashboard
+    </a>
+    <button onclick="window.print()" class="print-dossier-btn">
+        <i class="fa-solid fa-print"></i> Print Case File
+    </button>
+</div>
+
+<!-- DOSSIER FOLDER -->
+<div class="dossier-folder">
+    
+    <!-- FOLDER HEADER TAB -->
+    <div class="dossier-folder-tab tab-admin">
+        <span class="folder-title">INVESTIGATOR DOSSIER: #{{ c.complaint_id }}</span>
+        <span class="folder-stamp {% if c.status == 'Resolved' %}stamp-green{% elif c.status == 'Investigation' %}stamp-blue{% else %}stamp-orange{% endif %}">
+            {{ c.status | upper }}
+        </span>
+    </div>
+
+    <!-- DOSSIER BODY CONTAINER -->
+    <div class="dossier-body">
+        
+        <div class="dossier-columns-grid">
+            
+            <!-- LEFT PANEL: REPORTER PROFILE, INCIDENT DETAILS & FORENSICS -->
+            <div class="dossier-column-meta">
+                
+                <!-- REPORTER DETAILS -->
+                <div class="dossier-card">
+                    <h4 class="card-section-title"><i class="fa-solid fa-user-shield"></i> Citizen Profile</h4>
+                    <div class="dossier-fields-grid" style="grid-template-columns: 1fr;">
+                        <div class="dossier-field-box">
+                            <strong>Reporter Name:</strong>
+                            <span>{{ c.name }}</span>
+                        </div>
+                        <div class="dossier-field-box">
+                            <strong>Contact Email:</strong>
+                            <span>{{ c.email }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INCIDENT SUMMARY DATA -->
+                <div class="dossier-card">
+                    <h4 class="card-section-title"><i class="fa-solid fa-file-invoice"></i> Case Details</h4>
+                    <div class="dossier-fields-grid">
+                        <div class="dossier-field-box">
+                            <strong>Category:</strong>
+                            <span>{{ c.category }}</span>
+                        </div>
+                        <div class="dossier-field-box">
+                            <strong>Incident Date:</strong>
+                            <span>{{ c.incident_date or 'Not specified' }}</span>
+                        </div>
+                        <div class="dossier-field-box">
+                            <strong>Priority Level:</strong>
+                            <span>
+                                {% if c.priority == 'High' %}🔴 High{% elif c.priority == 'Medium' %}🟠 Medium{% else %}🟢 Low{% endif %}
+                            </span>
+                        </div>
+                        <div class="dossier-field-box">
+                            <strong>Fraud Amount:</strong>
+                            <span>{% if c.amount %}₹{{ c.amount }}{% else %}No financial loss{% endif %}</span>
+                        </div>
+                        <div class="dossier-field-box span-2">
+                            <strong>Suspect Information:</strong>
+                            <span>{{ c.suspect or 'None provided' }}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px;">
+                        <strong>Incident Description:</strong>
+                        <div class="dossier-text-block">{{ c.description }}</div>
+                    </div>
+                </div>
+
+                <!-- FORENSIC EVIDENCE HUD -->
+                <div class="evidence-forensic-badge">
+                    <div class="badge-title">
+                        <i class="fa-solid fa-fingerprint"></i> DIGITAL EVIDENCE & INTEGRITY STATUS
+                    </div>
+                    <div class="badge-body">
+                        <div class="badge-row">
+                            <span class="badge-label"><i class="fa-solid fa-file-shield"></i> Evidence File:</span>
+                            <span class="badge-val">
+                                {% if c.evidence %}
+                                    <a href="/uploads/{{ c.evidence }}" target="_blank" class="forensic-link" style="color: #ff7a00;">
+                                        {{ c.evidence }}
+                                    </a>
+                                {% else %}
+                                    <span class="muted-text">None uploaded</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge-label"><i class="fa-solid fa-key"></i> Cryptographic Hash (MD5):</span>
+                            <span class="badge-val hash-code">
+                                {% if c.evidence %}
+                                    {{ c.evidence | file_md5 }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge-label"><i class="fa-solid fa-scale-balanced"></i> Legal Compliance:</span>
+                            <span class="badge-val highlight-green">
+                                <i class="fa-solid fa-check-double"></i> Admissible under Sec 65B Indian Evidence Act
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT PANEL: RESOLUTION ACTIONS & CHAT -->
+            <div class="dossier-column-chat">
+                
+                <!-- ACTION / RESOLUTION UPDATE FORM -->
+                <div class="dossier-card">
+                    <h4 class="card-section-title"><i class="fa-solid fa-screwdriver-wrench"></i> Resolution & Action Control</h4>
+                    
+                    <form method="POST" action="/update_status/{{ c.id }}" class="admin-resolution-form" style="margin-top: 15px;">
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label for="status">Case Status</label>
+                            <select name="status" id="status" style="margin-top: 4px;">
+                                <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                <option value="Investigation" {% if c.status == 'Investigation' %}selected{% endif %}>Investigation</option>
+                                <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label for="action_taken">Admin Action Taken</label>
+                            <textarea name="action_taken" id="action_taken" placeholder="Describe actions (e.g., froze account, contacted node banker...)" required style="height: 70px; margin-top: 4px; padding: 10px;">{{ c.action_taken or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label for="resolution_note">Resolution Notes</label>
+                            <textarea name="resolution_note" id="resolution_note" placeholder="Forensic findings & investigation audits..." required style="height: 70px; margin-top: 4px; padding: 10px;">{{ c.resolution_note or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label for="admin_comment">Follow-up Instructions for User</label>
+                            <textarea name="admin_comment" id="admin_comment" placeholder="Actions the citizen should take (e.g. contact bank citation number...)" required style="height: 70px; margin-top: 4px; padding: 10px;">{{ c.admin_comment or '' }}</textarea>
+                        </div>
+
+                        <button type="submit" class="primary-btn" style="width: 100%; border-radius: 8px; padding: 12px;">
+                            <i class="fa-solid fa-floppy-disk"></i> Save & Broadcast Resolution
+                        </button>
+                    </form>
+                </div>
+
+                <!-- CITIZEN CHAT FEED -->
+                <div class="secure-chat-container" style="margin-top: 20px;">
+                    <h5><i class="fa-solid fa-comments"></i> Citizen Communication Portal</h5>
+                    <p class="chat-warning-note"><i class="fa-solid fa-circle-info"></i> Direct secured messenger with citizen <strong>{{ c.name }}</strong>.</p>
+                    
+                    <div class="chat-messages-box" style="max-height: 250px;">
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="chat-bubble {% if msg.sender == 'Admin' %}bubble-admin{% else %}bubble-user{% endif %}">
+                                    <div class="bubble-info">
+                                        <span class="sender-name">{% if msg.sender == 'Admin' %}{{ msg.sender_name }}{% else %}{{ c.name }}{% endif %}</span>
+                                        <span class="sender-label">{% if msg.sender == 'Admin' %}Investigator{% else %}Citizen{% endif %}</span>
+                                        <span class="message-time">{{ msg.sent_at }}</span>
+                                    </div>
+                                    <div class="bubble-text">{{ msg.message }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="chat-empty">
+                                <i class="fa-solid fa-message-slash"></i>
+                                <p>No correspondence recorded. Send a message to initiate contact.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form action="/send_message/{{ c.complaint_id }}" method="POST" class="chat-input-form">
+                        <textarea name="message_text" rows="2" placeholder="Send instructions, updates or questions to citizen..." required></textarea>
+                        <button type="submit" class="send-message-btn">
+                            <i class="fa-solid fa-reply"></i> Send Message
+                        </button>
+                    </form>
+                </div>
+
+                <!-- RESOLUTION TIMELINE HISTORY -->
+                {% if updates %}
+                <div class="dossier-card" style="margin-top: 20px;">
+                    <h4 class="card-section-title"><i class="fa-solid fa-timeline"></i> Activity Timeline Logs</h4>
+                    <div class="timeline-logs-wrapper" style="border: 0; padding: 0; margin: 0;">
+                        <ul class="timeline-log-list">
+                            {% for u in updates %}
+                                <li class="timeline-log-item">
+                                    <div class="timeline-log-meta">
+                                        <span class="timeline-log-time">{{ u.updated_at }}</span>
+                                        <span class="timeline-log-status status-{{ u.status | lower }}">{{ u.status }}</span>
+                                    </div>
+                                    <div class="timeline-log-note">{{ u.note }}</div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

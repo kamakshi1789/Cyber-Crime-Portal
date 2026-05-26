@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- PAGE TITLE -->
+
+<h1 class="page-title">
+    Cyber News & Press Releases
+</h1>
+
+<p class="page-subtitle">
+    Stay updated with the latest cyber security alerts, fraud trends,
+    awareness campaigns, and official notifications.
+</p>
+
+<!-- NEWS CARDS -->
+
+<div class="grid-3">
+
+    {% for item in news_list %}
+    <div class="card alert-card">
+
+        <img src="{{ item.image }}" alt="{{ item.title }}">
+
+        <div class="alert-tag">
+            {{ item.category | upper }}
+        </div>
+
+        <h2>
+            {{ item.title }}
+        </h2>
+
+        <p>
+            {{ item.summary }}
+        </p>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

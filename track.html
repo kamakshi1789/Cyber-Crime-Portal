@@ -1,0 +1,611 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- TITLE -->
+
+<h1 class="page-title">
+    Cyber Crime Reporting & Tracking Hub
+</h1>
+
+<p class="page-subtitle">
+    Submit new complaints securely and monitor the real-time progress of your reported incidents.
+</p>
+
+<hr class="orange-line">
+
+<!-- FLASH MESSAGES -->
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <div class="flash-alert-banner">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span>{{ message }}</span>
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="portal-layout-grid">
+
+    <!-- LEFT PANEL: REPORT CYBER CRIME -->
+    <div class="portal-form-panel">
+        <h2 class="panel-section-title">
+            <i class="fa-solid fa-file-shield"></i> File New Incident
+        </h2>
+        <p class="panel-section-desc">Provide accurate, verifiable details of the incident below.</p>
+        
+        <!-- Strict legal warning box -->
+        <div class="malpractice-warning-card">
+            <div class="warning-header">
+                <i class="fa-solid fa-gavel"></i>
+                <span>STATUTORY LEGAL WARNING</span>
+            </div>
+            <div class="warning-body">
+                <p>Filing a false report, submitting fabricated logs, or intentional misrepresentation of facts is a cognizable criminal offense punishable under:</p>
+                <ul>
+                    <li><strong>Section 182 Indian Penal Code (IPC):</strong> Up to 6 months imprisonment, fine, or both.</li>
+                    <li><strong>Section 66 Information Technology Act:</strong> Severe penalties for fraudulent digital claims.</li>
+                </ul>
+                <p class="warning-footer"><strong>NOTICE:</strong> Your IP address, session details, and upload hashes are logged and shared with state cyber cells for verification.</p>
+            </div>
+        </div>
+
+        <form action="/complaint" method="POST" enctype="multipart/form-data" class="complaint-form-integrated" id="complaintForm">
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label>Complaint Category <span class="required-star">*</span></label>
+                    <select name="category" required>
+                        <option value="">-- Select Category --</option>
+                        <option>UPI Fraud</option>
+                        <option>Fake Calls</option>
+                        <option>Social Media Scam</option>
+                        <option>Phishing</option>
+                        <option>Identity Theft</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date & Time of Incident <span class="required-star">*</span></label>
+                    <input type="datetime-local" name="incident_date" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Suspect Details / Phone / UPI ID</label>
+                <input type="text" name="suspect" placeholder="Example: +91 XXXXXXXX, scammer@upi">
+            </div>
+
+            <div class="form-group">
+                <label>Detailed Description of Incident <span class="required-star">*</span></label>
+                <textarea name="description" placeholder="Describe step-by-step how the fraud occurred..." required></textarea>
+            </div>
+
+            <div class="form-group-row">
+                <div class="form-group">
+                    <label>Fraud Amount (INR, if any)</label>
+                    <input type="number" name="amount" placeholder="Enter Amount" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Priority Level</label>
+                    <select name="priority">
+                        <option>High</option>
+                        <option selected>Medium</option>
+                        <option>Low</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Upload Screenshot / Evidence (PNG, JPG, JPEG, PDF, MP4 - Max 5MB)</label>
+                <div class="file-upload-wrapper">
+                    <input type="file" id="evidenceInput" name="evidence" accept=".png,.jpg,.jpeg,.pdf,.mp4">
+                    <div id="evidenceError" class="input-error-msg" style="display: none;"></div>
+                </div>
+            </div>
+
+            <!-- Mandatory declaration checkbox -->
+            <div class="declaration-consent-wrapper">
+                <input type="checkbox" id="declareConsent" name="declareConsent">
+                <label for="declareConsent">
+                    I solemnly declare that all statements and documents submitted are true and correct. I am aware that filing a false complaint is punishable under Section 182 of the IPC.
+                </label>
+            </div>
+
+            <div class="form-buttons">
+                <button type="reset" class="secondary-btn" id="resetBtn">Reset</button>
+                <button type="submit" id="submitComplaintBtn" class="primary-btn" disabled>
+                    <i class="fa-solid fa-paper-plane"></i> Submit Complaint
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL: TRACK COMPLAINTS -->
+    <div class="portal-tracker-panel">
+        <h2 class="panel-section-title">
+            <i class="fa-solid fa-clock-rotate-left"></i> Tracker & Resolution Timeline
+        </h2>
+        <p class="panel-section-desc">View latest actions taken by cyber investigators on your active cases.</p>
+
+        <!-- DYNAMIC RESOLUTION HUD: HOW THE ISSUE WAS RESOLVED -->
+        <div class="resolution-checklist-card main-resolution-hud-track" style="margin-bottom: 25px; padding: 22px; background: white; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,.04);">
+            <h4 style="font-size: 16px; color: #0f172a; margin-bottom: 8px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-top: 0;">
+                <i class="fa-solid fa-clipboard-list-check" style="color: #ff7a00;"></i> How Your Issue Was Resolved
+            </h4>
+            <p style="font-size: 12.5px; color: #64748b; margin-bottom: 18px; line-height: 1.5; margin-top: 4px;">
+                {% if complaints %}
+                    Real-time verification audit trail for your latest complaint <strong>#{{ complaints[0].complaint_id }}</strong> (Status: <strong>{{ complaints[0].status }}</strong>):
+                {% else %}
+                    Our standard cyber forensic & administrative workflow to resolve reported cyber crimes:
+                {% endif %}
+            </p>
+            
+            <ul class="workflow-checklist-list" style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 15px;">
+                {% if complaints %}
+                    {% set latest = complaints[0] %}
+                    
+                    <li class="checklist-item checked" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="color: #ff7a00; font-size: 17px; margin-top: 1px; flex-shrink: 0;">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; color: #0f172a; display: block; font-weight: 600;">Verified Complaint</strong>
+                            <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Incident registered in database under ID #{{ latest.complaint_id }} (Category: {{ latest.category }}).</p>
+                        </div>
+                    </li>
+
+                    <li class="checklist-item {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}checked{% else %}pending{% endif %}" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}color: #ff7a00;{% else %}color: #94a3b8;{% endif %}">
+                            {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% else %}
+                                <i class="fa-regular fa-circle"></i>
+                            {% endif %}
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}color: #0f172a;{% else %}color: #64748b;{% endif %}">Checked Evidence</strong>
+                            {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}
+                                {% if latest.evidence %}
+                                    <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Evidence file verified (MD5 Hash: {{ latest.evidence | file_md5 }}). Notes: {{ latest.resolution_note or 'Under active forensic analysis.' }}</p>
+                                {% else %}
+                                    <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Incident details audited. Notes: {{ latest.resolution_note or 'Under review.' }}</p>
+                                {% endif %}
+                            {% else %}
+                                <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Awaiting investigator review of uploaded documents/files.</p>
+                            {% endif %}
+                        </div>
+                    </li>
+
+                    <li class="checklist-item {% if latest.action_taken %}checked{% else %}pending{% endif %}" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; {% if latest.action_taken %}color: #ff7a00;{% else %}color: #94a3b8;{% endif %}">
+                            {% if latest.action_taken %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% else %}
+                                <i class="fa-regular fa-circle"></i>
+                            {% endif %}
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; {% if latest.action_taken %}color: #0f172a;{% else %}color: #64748b;{% endif %}">Took Action with Relevant Authority/Bank</strong>
+                            {% if latest.action_taken %}
+                                <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Action Taken: {{ latest.action_taken }}</p>
+                            {% else %}
+                                <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Coordinated with merchant portals, bank nodes, or telecom partners to freeze accounts / flag suspect lines.</p>
+                            {% endif %}
+                        </div>
+                    </li>
+
+                    <li class="checklist-item {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}checked{% else %}pending{% endif %}" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}color: #ff7a00;{% else %}color: #94a3b8;{% endif %}">
+                            {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% else %}
+                                <i class="fa-regular fa-circle"></i>
+                            {% endif %}
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}color: #0f172a;{% else %}color: #64748b;{% endif %}">Updated Status</strong>
+                            {% if latest.status == 'Investigation' or latest.status == 'Resolved' %}
+                                <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Case updates and historical action logs added. Status: <strong>{{ latest.status }}</strong>.</p>
+                            {% else %}
+                                <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Forensic findings and logs updated on your secure tracking ledger.</p>
+                            {% endif %}
+                        </div>
+                    </li>
+
+                    <li class="checklist-item {% if latest.status == 'Resolved' %}checked{% else %}pending{% endif %}" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; {% if latest.status == 'Resolved' %}color: #ff7a00;{% else %}color: #94a3b8;{% endif %}">
+                            {% if latest.status == 'Resolved' %}
+                                <i class="fa-solid fa-circle-check"></i>
+                            {% else %}
+                                <i class="fa-regular fa-circle"></i>
+                            {% endif %}
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; {% if latest.status == 'Resolved' %}color: #0f172a;{% else %}color: #64748b;{% endif %}">Final Outcome</strong>
+                            {% if latest.status == 'Resolved' %}
+                                <p style="font-size: 11.5px; color: #64748b; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Resolved by Investigator {{ latest.resolved_by or 'Officer' }}. Outcome: {{ latest.admin_comment or 'Cyber cell actions completed, follow-up instructions generated.' }}</p>
+                            {% else %}
+                                <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Awaiting final resolution review from the cyber cell officer.</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% else %}
+                    <li class="checklist-item pending" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; color: #94a3b8;">
+                            <i class="fa-regular fa-circle"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; color: #64748b;">Verified Complaint</strong>
+                            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Validate complaint registration and database ID generation.</p>
+                        </div>
+                    </li>
+                    <li class="checklist-item pending" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; color: #94a3b8;">
+                            <i class="fa-regular fa-circle"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; color: #64748b;">Checked Evidence</strong>
+                            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Perform file integrity hashes and forensic payload analysis on uploaded screenshots.</p>
+                        </div>
+                    </li>
+                    <li class="checklist-item pending" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; color: #94a3b8;">
+                            <i class="fa-regular fa-circle"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; color: #64748b;">Took Action with Relevant Authority/Bank</strong>
+                            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Cooperation request routed to payment merchants or police cells to freeze suspect accounts.</p>
+                        </div>
+                    </li>
+                    <li class="checklist-item pending" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; color: #94a3b8;">
+                            <i class="fa-regular fa-circle"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; color: #64748b;">Updated Status</strong>
+                            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Record activity updates and action notes inside user tracking portal.</p>
+                        </div>
+                    </li>
+                    <li class="checklist-item pending" style="display: flex; gap: 12px; align-items: flex-start;">
+                        <span class="check-icon-wrapper" style="font-size: 17px; margin-top: 1px; flex-shrink: 0; color: #94a3b8;">
+                            <i class="fa-regular fa-circle"></i>
+                        </span>
+                        <div class="checklist-text">
+                            <strong style="font-size: 13.5px; display: block; font-weight: 600; color: #64748b;">Final Outcome</strong>
+                            <p style="font-size: 11.5px; color: #94a3b8; margin-top: 2px; line-height: 1.4; margin-bottom: 0;">Close dispute, issue victim advisories, and archive complaint dossier.</p>
+                        </div>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+
+        {% if not complaints %}
+        <div class="empty-tracker-state">
+            <div class="empty-icon">
+                <i class="fa-solid fa-folder-open"></i>
+            </div>
+            <h3>No Complaints Found</h3>
+            <p>You have not submitted any complaints yet. Use the filing panel on the left to report your first case.</p>
+        </div>
+        {% else %}
+        <div class="track-grid">
+
+            {% for c in complaints %}
+
+            <div class="track-card-compact status-border-{{ c.status | lower }}" id="card-{{ c.complaint_id }}">
+                
+                <!-- COMPACT HEADER (Always Visible) -->
+                <div class="track-card-header" onclick="toggleTrackCard('{{ c.complaint_id }}')">
+                    <div class="header-left">
+                        <span class="card-id">#{{ c.complaint_id }}</span>
+                        <span class="card-category">{{ c.category }}</span>
+                    </div>
+                    <div class="header-right">
+                        {% if c.status == 'Pending' %}
+                            <span class="status pending-badge">Pending</span>
+                        {% elif c.status == 'Resolved' %}
+                            <span class="status resolved-badge">Resolved</span>
+                        {% else %}
+                            <span class="status investigation-badge">Investigation</span>
+                        {% endif %}
+                        <a href="/track/case/{{ c.complaint_id }}" target="_blank" class="open-case-tab-btn" onclick="event.stopPropagation();">
+                            <i class="fa-solid fa-eye"></i> View Status
+                        </a>
+                        <button type="button" class="expand-toggle-btn" id="toggle-btn-{{ c.complaint_id }}">
+                            {% if loop.first %}
+                                Collapse Case <i class="fa-solid fa-chevron-up"></i>
+                            {% else %}
+                                Expand Case <i class="fa-solid fa-chevron-down"></i>
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- EXPANDABLE CONTENT (Toggled via JS) -->
+                <div class="track-card-body-expandable" id="expandable-{{ c.complaint_id }}" style="{% if loop.first %}display: block;{% else %}display: none;{% endif %}">
+                    <hr class="separator-line">
+
+                    <!-- STATUS STEPPER (WOW Factor) -->
+                    <div class="status-stepper-container">
+                        <div class="status-stepper">
+                            <div class="step {% if c.status == 'Pending' or c.status == 'Investigation' or c.status == 'Resolved' %}active{% endif %}">
+                                <div class="step-circle"><i class="fa-solid fa-file-arrow-up"></i></div>
+                                <span class="step-label">Submitted</span>
+                            </div>
+                            <div class="step-line {% if c.status == 'Investigation' or c.status == 'Resolved' %}active{% endif %}"></div>
+                            <div class="step {% if c.status == 'Investigation' or c.status == 'Resolved' %}active{% endif %}">
+                                <div class="step-circle"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                                <span class="step-label">Investigating</span>
+                            </div>
+                            <div class="step-line {% if c.status == 'Resolved' %}active{% endif %}"></div>
+                            <div class="step {% if c.status == 'Resolved' %}active{% endif %}">
+                                <div class="step-circle"><i class="fa-solid fa-circle-check"></i></div>
+                                <span class="step-label">Resolved</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CASE DETAILS GRID -->
+                    <div class="expanded-details-grid">
+                        <div class="detail-field">
+                            <strong>Incident Date:</strong>
+                            <span>{{ c.incident_date or 'Not specified' }}</span>
+                        </div>
+                        <div class="detail-field">
+                            <strong>Priority Level:</strong>
+                            <span>
+                                {% if c.priority == 'High' %}🔴 High{% elif c.priority == 'Medium' %}🟠 Medium{% else %}🟢 Low{% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-field">
+                            <strong>Suspect Information:</strong>
+                            <span>{{ c.suspect or 'None provided' }}</span>
+                        </div>
+                        <div class="detail-field">
+                            <strong>Fraud Amount:</strong>
+                            <span>{% if c.amount %}₹{{ c.amount }}{% else %}No financial loss{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-desc-wrapper">
+                        <strong>Incident Description:</strong>
+                        <div class="expanded-desc-box">
+                            {{ c.description }}
+                        </div>
+                    </div>
+
+                    <!-- EVIDENCE FORENSIC INTEGRITY BADGE (WOW Factor) -->
+                    <div class="evidence-forensic-badge">
+                        <div class="badge-title">
+                            <i class="fa-solid fa-fingerprint"></i> DIGITAL EVIDENCE HUD & INTEGRITY LOG
+                        </div>
+                        <div class="badge-body">
+                            <div class="badge-row">
+                                <span class="badge-label"><i class="fa-solid fa-file-shield"></i> File Attachment:</span>
+                                <span class="badge-val">
+                                    {% if c.evidence %}
+                                        <a href="/uploads/{{ c.evidence }}" target="_blank" class="forensic-link">
+                                            {{ c.evidence }}
+                                        </a>
+                                    {% else %}
+                                        <span class="muted-text">No evidence document uploaded</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="badge-row">
+                                <span class="badge-label"><i class="fa-solid fa-key"></i> Forensic Hash (MD5):</span>
+                                <span class="badge-val hash-code">
+                                    {% if c.evidence %}
+                                        {{ c.evidence | file_md5 }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="badge-row">
+                                <span class="badge-label"><i class="fa-solid fa-scale-balanced"></i> Legal Admissibility:</span>
+                                <span class="badge-val highlight-green">
+                                    <i class="fa-solid fa-check-double"></i> Certified compliant under Sec 65B Indian Evidence Act
+                                </span>
+                            </div>
+                            <div class="badge-row">
+                                <span class="badge-label"><i class="fa-solid fa-link-slash"></i> Chain of Custody:</span>
+                                <span class="badge-val highlight-blue">
+                                    <i class="fa-solid fa-lock"></i> Secured & timestamped in database
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="resolution-checklist-card">
+                        <h4 class="card-section-title">
+                            <i class="fa-solid fa-clipboard-list-check"></i> How Your Issue Was Resolved
+                        </h4>
+                        <p class="section-desc">Visual trace of digital forensics & administrative workflows conducted on this complaint:</p>
+                        
+                        <ul class="workflow-checklist-list">
+                            
+                            <li class="checklist-item checked">
+                                <span class="check-icon-wrapper">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </span>
+                                <div class="checklist-text">
+                                    <strong>Verified Complaint</strong>
+                                    <p>Incident registered in server database under tracking ID: #{{ c.complaint_id }} (Category: {{ c.category }}).</p>
+                                </div>
+                            </li>
+
+                            <li class="checklist-item {% if c.status == 'Investigation' or c.status == 'Resolved' %}checked{% else %}pending{% endif %}">
+                                <span class="check-icon-wrapper">
+                                    {% if c.status == 'Investigation' or c.status == 'Resolved' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-circle"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="checklist-text">
+                                    <strong>Checked Evidence</strong>
+                                    {% if c.status == 'Investigation' or c.status == 'Resolved' %}
+                                        {% if c.evidence %}
+                                            <p>Evidence file verified (MD5 Hash: {{ c.evidence | file_md5 }}). Notes: {{ c.resolution_note or 'Under active forensic analysis.' }}</p>
+                                        {% else %}
+                                            <p>Incident details audited. Notes: {{ c.resolution_note or 'Under review.' }}</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p>Awaiting investigator review of uploaded documents/files.</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+
+                            <li class="checklist-item {% if c.action_taken %}checked{% else %}pending{% endif %}">
+                                <span class="check-icon-wrapper">
+                                    {% if c.action_taken %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-circle"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="checklist-text">
+                                    <strong>Took Action with Relevant Authority/Bank</strong>
+                                    {% if c.action_taken %}
+                                        <p>Action Taken: {{ c.action_taken }}</p>
+                                    {% else %}
+                                        <p>Coordinated with merchant portals, bank nodes, or telecom partners to freeze accounts / flag suspect lines.</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+
+                            <li class="checklist-item {% if c.status == 'Investigation' or c.status == 'Resolved' %}checked{% else %}pending{% endif %}">
+                                <span class="check-icon-wrapper">
+                                    {% if c.status == 'Investigation' or c.status == 'Resolved' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-circle"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="checklist-text">
+                                    <strong>Updated Status</strong>
+                                    {% if c.status == 'Investigation' or c.status == 'Resolved' %}
+                                        <p>Case updates and historical action logs added. Current Status: <strong>{{ c.status }}</strong>.</p>
+                                    {% else %}
+                                        <p>Case updates and historical action logs added to citizen's digital tracking ledger.</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+
+                            <li class="checklist-item {% if c.status == 'Resolved' %}checked{% else %}pending{% endif %}">
+                                <span class="check-icon-wrapper">
+                                    {% if c.status == 'Resolved' %}
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-circle"></i>
+                                    {% endif %}
+                                </span>
+                                <div class="checklist-text">
+                                    <strong>Final Outcome</strong>
+                                    {% if c.status == 'Resolved' %}
+                                        <p>Resolved by Investigator {{ c.resolved_by or 'Officer' }}. Outcome: {{ c.admin_comment or 'Cyber cell actions completed, follow-up instructions generated.' }}</p>
+                                    {% else %}
+                                        <p>Awaiting final resolution review from the cyber cell officer.</p>
+                                    {% endif %}
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <!-- RESOLUTION DETAILS -->
+                    <div class="resolution-summary-box">
+                        <div class="resolution-box-header">
+                            <h5><i class="fa-solid fa-toolbox"></i> Cyber Cell Resolution Status</h5>
+                            {% if c.resolved_by %}
+                                <span class="resolved-by-meta">By Investigator {{ c.resolved_by }} | {{ c.resolved_at }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if c.status == 'Resolved' %}
+                            <div class="status-summary-alert resolved-alert">
+                                <h6><i class="fa-solid fa-circle-check"></i> CASE RESOLUTION SUMMARY</h6>
+                                <p><strong>Action Taken:</strong> {{ c.action_taken or 'No detailed actions recorded.' }}</p>
+                                <p><strong>Resolution Note:</strong> {{ c.resolution_note or 'No resolution notes recorded.' }}</p>
+                                <p><strong>Next Steps:</strong> {{ c.admin_comment or 'No specific follow-up instructions provided.' }}</p>
+                            </div>
+                        {% elif c.status == 'Investigation' %}
+                            <div class="status-summary-alert investigation-alert">
+                                <h6><i class="fa-solid fa-magnifying-glass"></i> ACTIVE INVESTIGATION LOG</h6>
+                                <p><strong>Action Taken:</strong> {{ c.action_taken or 'Evidence inspection and suspect tracking initiated.' }}</p>
+                                <p><strong>Status Note:</strong> {{ c.resolution_note or 'Our cyber unit is auditing transaction trail and UPI logs.' }}</p>
+                                <p><strong>User Instructions:</strong> {{ c.admin_comment or 'Please preserve bank statements and refrain from sharing OTPs.' }}</p>
+                            </div>
+                        {% else %}
+                            <div class="status-summary-alert pending-alert">
+                                <h6><i class="fa-solid fa-clock"></i> AWAITING ASSIGNMENT</h6>
+                                <p>This complaint is currently queued. A cyber officer will review the incident report and uploaded hashes shortly.</p>
+                            </div>
+                        {% endif %}
+
+                        <!-- HISTORICAL RESOLUTION TIMELINE -->
+                        {% if updates_by_complaint and c.complaint_id in updates_by_complaint %}
+                        <div class="timeline-logs-wrapper">
+                            <h6><i class="fa-solid fa-timeline"></i> Full Activity Timeline</h6>
+                            <ul class="timeline-log-list">
+                                {% for u in updates_by_complaint[c.complaint_id] %}
+                                    <li class="timeline-log-item">
+                                        <div class="timeline-log-meta">
+                                            <span class="timeline-log-time">{{ u.updated_at }}</span>
+                                            <span class="timeline-log-status status-{{ u.status | lower }}">{{ u.status }}</span>
+                                        </div>
+                                        <div class="timeline-log-note">{{ u.note }}</div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- SECURE CONVERSATION TIMELINE (Chat system) -->
+                    <div class="secure-chat-container">
+                        <h5><i class="fa-solid fa-comments"></i> Encrypted Conversation Thread</h5>
+                        <p class="chat-warning-note"><i class="fa-solid fa-shield-halved"></i> Communications are monitored and logged for legal verification.</p>
+                        
+                        <div class="chat-messages-box" id="chat-messages-{{ c.complaint_id }}">
+                            {% if messages_by_complaint and c.complaint_id in messages_by_complaint %}
+                                {% for msg in messages_by_complaint[c.complaint_id] %}
+                                    <div class="chat-bubble {% if msg.sender == 'User' %}bubble-user{% else %}bubble-admin{% endif %}">
+                                        <div class="bubble-info">
+                                            <span class="sender-name">{% if msg.sender == 'User' %}{{ c.name }}{% else %}{{ msg.sender_name }}{% endif %}</span>
+                                            <span class="sender-label">{% if msg.sender == 'User' %}Citizen{% else %}Investigator{% endif %}</span>
+                                            <span class="message-time">{{ msg.sent_at }}</span>
+                                        </div>
+                                        <div class="bubble-text">{{ msg.message }}</div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="chat-empty">
+                                    <i class="fa-solid fa-message-slash"></i>
+                                    <p>No messages exchanged. Use the form below to message the assigned investigator.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <form action="/send_message/{{ c.complaint_id }}" method="POST" class="chat-input-form" onclick="event.stopPropagation();">
+                            <textarea name="message_text" rows="2" placeholder="Send a message or updates to the investigator..." required></textarea>
+                            <button type="submit" class="send-message-btn">
+                                <i class="fa-solid fa-paper-plane"></i> Send
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+{% endblock %}

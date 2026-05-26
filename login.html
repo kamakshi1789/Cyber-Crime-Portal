@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="auth-wrapper">
+    <h1 class="page-title">
+        User Login
+    </h1>
+    
+    <p class="page-subtitle">
+        Login securely to report and track cyber crime complaints.
+    </p>
+    
+    <div class="auth-box">
+    
+        <!-- ERROR MESSAGE -->
+    
+        {% with messages = get_flashed_messages() %}
+    
+            {% if messages %}
+    
+                {% for message in messages %}
+    
+                    <div class="error-message">
+    
+                        {{ message }}
+    
+                    </div>
+    
+                {% endfor %}
+    
+            {% endif %}
+    
+        {% endwith %}
+    
+        <!-- LOGIN FORM -->
+    
+        <form method="POST">
+    
+            <input
+            type="email"
+            name="email"
+            placeholder="Enter Email Address"
+            required>
+    
+            <input
+            type="password"
+            name="password"
+            placeholder="Enter Password"
+            required>
+    
+            <button type="submit">
+    
+                Login
+    
+            </button>
+    
+        </form>
+    
+    </div>
+</div>
+
+{% endblock %}

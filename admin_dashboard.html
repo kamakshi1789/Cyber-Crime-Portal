@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- HEADER -->
+
+<div class="dashboard-header">
+
+    <div>
+
+        <h1 class="page-title">
+            Admin Dashboard
+        </h1>
+
+        <p class="page-subtitle">
+            Manage cyber crime complaints, update statuses,
+            and monitor portal activities.
+        </p>
+
+    </div>
+
+    <div class="date-box">
+
+        🛡 Cyber Crime Monitoring Panel
+
+    </div>
+
+</div>
+
+<hr class="orange-line">
+
+<!-- TOTAL CASES -->
+
+<div class="stats-row">
+
+    <!-- TOTAL -->
+
+    <div class="modern-stat-card">
+
+        <div class="stat-icon">
+            📄
+        </div>
+
+        <h1>
+            {{ total }}
+        </h1>
+
+        <p>
+            Total Complaints
+        </p>
+
+    </div>
+
+    <!-- PENDING -->
+
+    <div class="modern-stat-card">
+
+        <div class="stat-icon">
+            ⏳
+        </div>
+
+        <h1>
+            {{ pending }}
+        </h1>
+
+        <p>
+            Pending Cases
+        </p>
+
+    </div>
+
+    <!-- INVESTIGATION -->
+
+    <div class="modern-stat-card">
+
+        <div class="stat-icon">
+            🔍
+        </div>
+
+        <h1>
+            {{ investigation }}
+        </h1>
+
+        <p>
+            Investigation
+        </p>
+
+    </div>
+
+    <!-- RESOLVED -->
+
+    <div class="modern-stat-card">
+
+        <div class="stat-icon">
+            ✅
+        </div>
+
+        <h1>
+            {{ resolved }}
+        </h1>
+
+        <p>
+            Resolved Cases
+        </p>
+
+    </div>
+
+</div>
+
+<!-- ALERT -->
+
+<div class="alert-banner">
+
+    ⚠ Admins should verify complaint evidence before updating investigation status.
+
+</div>
+
+
+<!-- TABLE -->
+
+<!-- CATEGORY FILTERS -->
+
+<div class="category-filter-box">
+
+
+    <div class="filters">
+
+        <button class="filter-btn active"
+                data-category="all">
+
+            All Categories
+
+        </button>
+
+        <button class="filter-btn"
+                data-category="Fake Calls">
+
+            Fake Calls
+
+        </button>
+
+        <button class="filter-btn"
+                data-category="Investment & Crypto Scams">
+
+            Investment & Crypto Scams
+
+        </button>
+
+        <button class="filter-btn"
+                data-category="UPI Fraud">
+
+            UPI Fraud
+
+        </button>
+
+    </div>
+
+</div>
+
+<!-- TABLE -->
+
+<div class="card dashboard-table">
+
+    <div class="table-header">
+
+        <h2>
+            Complaint Management (Complaint Resolution Tracking System)
+        </h2>
+
+    </div>
+
+    <table>
+
+        <tr>
+
+            <th>ID</th>
+            <th>User</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+            <th>Delete</th>
+
+        </tr>
+
+        {% for c in complaints %}
+
+       <tr class="complaint-row"
+          data-category="{{ c.category }}"
+          onclick="toggleDetails('details-{{ c.id }}')">
+
+            <td>
+                {{ c.complaint_id }}
+            </td>
+
+            <td>
+                {{ c.name }}
+            </td>
+
+            <td>
+                {{ c.category }}
+            </td>
+
+            <td>
+
+                {% if c.priority == 'High' %}
+
+                    🔴 High
+
+                {% elif c.priority == 'Medium' %}
+
+                    🟠 Medium
+
+                {% else %}
+
+                    🟢 Low
+
+                {% endif %}
+
+            </td>
+
+            <td>
+
+                {% if c.status == 'Pending' %}
+
+                    <span class="pending">
+                        Pending
+                    </span>
+
+                {% elif c.status == 'Resolved' %}
+
+                    <span class="resolved">
+                        Resolved
+                    </span>
+
+                {% else %}
+
+                    <span class="investigation">
+                        Investigation
+                    </span>
+
+                {% endif %}
+
+            </td>
+
+            <!-- VIEW STATUS BUTTON -->
+
+            <td>
+                <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                    <a href="/admin/case/{{ c.complaint_id }}" target="_blank" class="open-case-tab-btn-admin" onclick="event.stopPropagation();">
+                        <i class="fa-solid fa-eye"></i> View Status
+                    </a>
+                </div>
+            </td>
+
+            <!-- DELETE -->
+
+            <td>
+
+                <a
+                href="/delete/{{ c.id }}"
+                class="delete-btn"
+                onclick="event.stopPropagation();">
+
+                    Delete
+
+                </a>
+
+            </td>
+
+        </tr>
+
+        <!-- DETAILS ROW -->
+
+        <tr id="details-{{ c.id }}" class="details-row" style="display: none;">
+
+            <td colspan="7">
+
+                <div class="expanded-details-container">
+
+                    <div class="details-grid">
+
+                        <!-- Details Info Section -->
+
+                        <div class="details-info-section">
+
+                            <h3>📄 Incident Details</h3>
+
+                            <div class="detail-item">
+                                <strong>Incident Date:</strong>
+                                <span>{{ c.incident_date or 'Not specified' }}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <strong>Suspect Details:</strong>
+                                <span>{{ c.suspect or 'None provided' }}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <strong>Fraud Amount:</strong>
+                                <span>{% if c.amount %}₹{{ c.amount }}{% else %}No financial loss{% endif %}</span>
+                            </div>
+
+                            <div class="detail-item">
+                                <strong>Description:</strong>
+                                <div class="detail-desc-box">
+                                    {{ c.description }}
+                                </div>
+                            </div>
+
+                            <!-- EVIDENCE FORENSIC INTEGRITY BADGE (WOW Factor) -->
+                            <div class="evidence-forensic-badge" style="margin-top: 20px;">
+                                <div class="badge-title">
+                                    <i class="fa-solid fa-fingerprint"></i> DIGITAL EVIDENCE & INTEGRITY STATUS
+                                </div>
+                                <div class="badge-body" style="padding: 12px; font-size: 12.5px;">
+                                    <div style="margin-bottom: 6px;">
+                                        <strong>Evidence Attachment:</strong> 
+                                        {% if c.evidence %}
+                                            <a href="/uploads/{{ c.evidence }}" target="_blank" class="forensic-link" onclick="event.stopPropagation();">
+                                                <i class="fa-solid fa-file-lines"></i> {{ c.evidence }}
+                                            </a>
+                                        {% else %}
+                                            <span class="muted-text">None uploaded</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-bottom: 6px;">
+                                        <strong>MD5 Checksum Hash:</strong> 
+                                        {% if c.evidence %}
+                                            <span class="hash-code">{{ c.evidence | file_md5 }}</span>
+                                        {% else %}
+                                            <span>N/A</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin-bottom: 6px;">
+                                        <strong>Legal Compliance:</strong>
+                                        <span class="highlight-green"><i class="fa-solid fa-shield-halved"></i> Sec 65B Admissible</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Details Resolution Section -->
+
+                        <div class="details-resolution-section">
+
+                            <h3>🛠 Resolution Process & Action Taken</h3>
+
+                            <form
+                            method="POST"
+                            action="/update_status/{{ c.id }}"
+                            class="admin-resolution-form"
+                            onclick="event.stopPropagation();">
+
+                                <div class="form-group">
+
+                                    <label for="status-{{ c.id }}">
+                                        Case Status
+                                    </label>
+
+                                    <select name="status" id="status-{{ c.id }}">
+                                        <option value="Pending" {% if c.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Investigation" {% if c.status == 'Investigation' %}selected{% endif %}>Investigation</option>
+                                        <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                    </select>
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="action-{{ c.id }}">
+                                        Admin Action Taken
+                                    </label>
+
+                                    <textarea
+                                    name="action_taken"
+                                    id="action-{{ c.id }}"
+                                    placeholder="e.g. Contacted bank to freeze funds, blacklisted suspect UPI ID..."
+                                    required>{{ c.action_taken or '' }}</textarea>
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="note-{{ c.id }}">
+                                        Resolution Notes
+                                    </label>
+
+                                    <textarea
+                                    name="resolution_note"
+                                    id="note-{{ c.id }}"
+                                    placeholder="e.g. Scammer identified as part of money mule network. Verified fake KYC transaction..."
+                                    required>{{ c.resolution_note or '' }}</textarea>
+
+                                </div>
+
+                                <div class="form-group">
+
+                                    <label for="comment-{{ c.id }}">
+                                        Follow-up Comment/Instructions to User
+                                    </label>
+
+                                    <textarea
+                                    name="admin_comment"
+                                    id="comment-{{ c.id }}"
+                                    placeholder="e.g. Please contact your bank immediately and cite cyber cell case reference number..."
+                                    required>{{ c.admin_comment or '' }}</textarea>
+
+                                </div>
+
+                                <button type="submit" class="save-btn">
+                                    Save Changes & Update
+                                </button>
+
+                            </form>
+
+                            <!-- TIMELINE HISTORY LOGS -->
+
+                            {% if updates_by_complaint and c.complaint_id in updates_by_complaint %}
+
+                            <div class="resolution-timeline-box">
+
+                                <h5>📜 Resolution updates timeline</h5>
+
+                                <ul class="timeline-list">
+
+                                    {% for u in updates_by_complaint[c.complaint_id] %}
+
+                                    <li class="timeline-item">
+
+                                        <div class="timeline-meta">
+                                            {{ u.updated_at }} | Status: <strong>{{ u.status }}</strong> | By: {{ u.updated_by }}
+                                        </div>
+
+                                        <div class="timeline-note">
+                                            {{ u.note }}
+                                        </div>
+
+                                    </li>
+
+                                    {% endfor %}
+
+                                </ul>
+
+                            </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <hr class="separator-line" style="margin: 25px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+                    <!-- SECURE CONVERSATION TIMELINE (Admin Chat Hub) -->
+                    <div class="secure-chat-container">
+                        <h5><i class="fa-solid fa-comments"></i> Citizen Communication Portal</h5>
+                        <p class="chat-warning-note"><i class="fa-solid fa-circle-info"></i> Send messages directly to citizen <strong>{{ c.name }}</strong> regarding complaint #{{ c.complaint_id }}.</p>
+                        
+                        <div class="chat-messages-box admin-chat-messages-box" id="admin-chat-messages-{{ c.complaint_id }}">
+                            {% if messages_by_complaint and c.complaint_id in messages_by_complaint %}
+                                {% for msg in messages_by_complaint[c.complaint_id] %}
+                                    <div class="chat-bubble {% if msg.sender == 'Admin' %}bubble-admin{% else %}bubble-user{% endif %}">
+                                        <div class="bubble-info">
+                                            <span class="sender-name">{% if msg.sender == 'Admin' %}{{ msg.sender_name }}{% else %}{{ c.name }}{% endif %}</span>
+                                            <span class="sender-label">{% if msg.sender == 'Admin' %}Investigator{% else %}Citizen{% endif %}</span>
+                                            <span class="message-time">{{ msg.sent_at }}</span>
+                                        </div>
+                                        <div class="bubble-text">{{ msg.message }}</div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="chat-empty">
+                                    <i class="fa-solid fa-message-slash"></i>
+                                    <p>No messages exchanged with citizen yet. Use the input field below to contact them.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <form action="/send_message/{{ c.complaint_id }}" method="POST" class="chat-input-form" onclick="event.stopPropagation();">
+                            <textarea name="message_text" rows="2" placeholder="Send instructions, updates or questions to citizen..." required></textarea>
+                            <button type="submit" class="send-message-btn">
+                                <i class="fa-solid fa-reply"></i> Send Message
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1 class="page-title">
+    COMMON MODUS OPERANDI & SAFETY
+</h1>
+
+<p class="page-subtitle">
+    Issued in public interest. Please read and share with your family to protect against emerging threats.
+</p>
+
+<hr class="orange-line">
+
+<div class="grid-3">
+
+    {% for scam in scams %}
+    <div class="card awareness-card">
+
+        <div class="alert-label">
+            ALERT
+        </div>
+
+        <img src="{{ scam.image }}" alt="{{ scam.title }}">
+
+        <div class="awareness-content">
+
+            <h2>
+                {{ scam.title }}
+            </h2>
+
+            <p>
+                {{ scam.desc }}
+            </p>
+
+            <div class="precautions-box">
+
+                <h4>
+                    🛡 PRECAUTIONS
+                </h4>
+
+                <ul>
+                    {% for tip in scam.tips %}
+                    <li>{{ tip }}</li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+
+            <button class="toggle-guidelines-btn">
+                View Guidelines <i class="fa-solid fa-chevron-down"></i>
+            </button>
+
+        </div>
+
+    </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

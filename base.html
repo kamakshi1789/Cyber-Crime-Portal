@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>Cyber Secure India</title>
+
+    <!-- CSS -->
+
+    <link rel="stylesheet"
+    href="{{ url_for('static',
+    filename='css/style.css') }}">
+
+    <!-- FONT AWESOME -->
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- SIDEBAR -->
+
+    <div class="sidebar">
+
+        <!-- LOGO -->
+
+        <div>
+
+            <div class="logo-section">
+
+                <div class="logo-icon">
+
+                    <i class="fa-solid fa-shield-halved"></i>
+
+                </div>
+
+                <h1>Cyber Secure</h1>
+
+                <p>National Awareness Portal</p>
+
+            </div>
+
+            <!-- NAVIGATION -->
+
+            <ul>
+
+                <li>
+                    <a href="/">
+                        <i class="fa-solid fa-house"></i>
+                        Home
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/awareness">
+                        <i class="fa-solid fa-user-shield"></i>
+                        Scam Awareness
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/sop">
+                        <i class="fa-solid fa-book"></i>
+                        SOP & Guidance
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/news">
+                        <i class="fa-solid fa-newspaper"></i>
+                        Press & News
+                    </a>
+                </li>
+
+                <!-- USER LOGIN -->
+
+                {% if session.get('user_id') %}
+
+                <li>
+                    <a href="/dashboard">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/track">
+                        <i class="fa-solid fa-file-circle-plus"></i>
+                        Report Cyber Crime
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/track">
+                        <i class="fa-solid fa-location-dot"></i>
+                        Track Complaint
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Logout
+                    </a>
+                </li>
+
+                <!-- ADMIN LOGIN -->
+
+                {% elif session.get('admin') %}
+
+                <li>
+                    <a href="/admin">
+                        <i class="fa-solid fa-user-tie"></i>
+                        Admin Dashboard
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/logout">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        Logout
+                    </a>
+                </li>
+
+                <!-- NORMAL USER -->
+
+                {% else %}
+
+                <li>
+                    <a href="/login">
+                        <i class="fa-solid fa-user"></i>
+                        User Login
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/register">
+                        <i class="fa-solid fa-user-plus"></i>
+                        Register
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/admin_login">
+                        <i class="fa-solid fa-user-shield"></i>
+                        Admin Login
+                    </a>
+                </li>
+
+                {% endif %}
+
+                <li>
+                    <a href="/about">
+                        <i class="fa-solid fa-circle-info"></i>
+                        About
+                    </a>
+                </li>
+
+                <li>
+                    <a href="/contact">
+                        <i class="fa-solid fa-phone"></i>
+                        Contact Us
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+        <!-- HELPLINE -->
+
+        <div class="helpline">
+
+            <p>National Cyber Crime Helpline</p>
+
+            <div class="helpline-box">
+
+                📞 1930
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+
+    <div class="main-content">
+
+        <!-- SECURITY TICKER -->
+        <div class="security-ticker">
+            <div class="ticker-label">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                LATEST ALERTS
+            </div>
+            <div class="ticker-track">
+                <div class="ticker-items">
+                    <span>⚠️ ALERT: Beware of electricity bill disconnection warning SMS asking you to install remote access APKs.</span>
+                    <span>⚠️ KYC WARNING: Bank officers will never ask for your OTP or password via SMS or phone call.</span>
+                    <span>⚠️ EMERGENCY: Report any online financial fraud on national helpline 1930 immediately to freeze transactions.</span>
+                    <span>⚠️ TELEGRAM TASKS: Do not join groups promising payments for simple video rating or map review tasks.</span>
+                </div>
+            </div>
+        </div>
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+    <!-- JS -->
+
+    <script src="{{ url_for('static',
+    filename='js/script.js') }}"></script>
+
+</body>
+
+</html>
